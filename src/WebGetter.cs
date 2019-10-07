@@ -79,6 +79,11 @@ namespace NotifyIRPAppointment
                 return;
             }
             
+            var parsedSlots = parsed["slots"];
+            if(parsedSlots == null){
+                 return;
+            }
+
             var slots = parsed["slots"].Children().ToList();
             Console.WriteLine($"{slots.Count} slots remaining");
             if (slots.Count > 1 || (slots.Count > 0 && !slots.First().ToString().Contains("BB770F5CA8763DBB8025848900772FFF")))
