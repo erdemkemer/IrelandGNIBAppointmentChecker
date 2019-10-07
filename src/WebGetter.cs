@@ -59,7 +59,7 @@ namespace NotifyIRPAppointment
             }
         }
 
-        public async void GetAppointments()
+        public async Task GetAppointments()
         {
             Counter++;
             
@@ -80,14 +80,19 @@ namespace NotifyIRPAppointment
             }
             
             var parsedSlots = parsed["slots"];
-            if(parsedSlots == null){
+            if(parsedSlots == null || parsedSlots.Children().First().ToString() == "empty"){
                  return;
             }
 
             var slots = parsed["slots"].Children().ToList();
             Console.WriteLine($"{slots.Count} slots remaining");
-            if (slots.Count > 1 || (slots.Count > 0 && !slots.First().ToString().Contains("BB770F5CA8763DBB8025848900772FFF")))
+            if (slots.Count > 1 || (slots.Count > 0 && !slots.First().ToString().Contains("BB770F5CA8763DBB8025848900772FFF"))) 
+            {
                 Process.Start("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "https://burghquayregistrationoffice.inis.gov.ie/Website/AMSREG/AMSRegWeb.nsf/AppSelect?OpenForm");
+                Console.WriteLine($"Sleeping for 60 seconds");
+                Task.Delay(60000).Wait();
+            }
+                
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NotifyIRPAppointment
 {
@@ -10,9 +11,9 @@ namespace NotifyIRPAppointment
         private static object _locker = new object();
         private static Timer _timer;
 
-        public Action Action { get; }
+        public Func<Task> Action { get; }
 
-        public TimerProcess(Action action)
+        public TimerProcess(Func<Task> action)
         {
             Action = action;
         }
@@ -41,8 +42,8 @@ namespace NotifyIRPAppointment
                 }
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
  
-                var action = (Action)state;
-                action();
+                var action = (Func<Task>)state;
+                action().Wait();
             }
             finally
             {
