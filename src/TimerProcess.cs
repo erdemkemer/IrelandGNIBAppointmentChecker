@@ -6,7 +6,7 @@ namespace NotifyIRPAppointment
 {
     public class TimerProcess
     {
-        private const long TimerInterval = 10000;
+        private const long TimerInterval = 5000;
  
         private static object _locker = new object();
         private static Timer _timer;

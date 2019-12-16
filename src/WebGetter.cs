@@ -53,8 +53,17 @@ namespace NotifyIRPAppointment
                     request.Headers.TryAddWithoutValidation("X-Requested-With", "XMLHttpRequest");
                     request.Headers.TryAddWithoutValidation("Cookie", "_ga=GA1.3.1992840810.1567979969; _hjid=8cbd6989-f6f4-4868-84b7-a1fbc4db71aa; _gid=GA1.3.1221548346.1570235534; cookieconsent_status=dismiss");
 
-                    var response = await httpClient.SendAsync(request);
-                    return await response.Content.ReadAsStringAsync();
+                    var content = String.Empty;
+                    try
+                    {
+                        var response = await httpClient.SendAsync(request);
+                        content = await response.Content.ReadAsStringAsync();
+                    }
+                    catch (System.Net.Http.HttpRequestException)
+                    {
+                        Console.WriteLine("Cannot connect to the remote server...");
+                    }
+                    return content;
                 }
             }
         }
@@ -69,6 +78,9 @@ namespace NotifyIRPAppointment
                 $"https://burghquayregistrationoffice.inis.gov.ie/Website/AMSREG/AMSRegWeb.nsf/(getAppsNear)?readform&cat=All&sbcat=All&typ=Renewal&k={K}&p={P}&_=1570237940523",
                 $"https://burghquayregistrationoffice.inis.gov.ie/Website/AMSREG/AMSRegWeb.nsf/AppSelect?OpenForm");
 
+            if (String.IsNullOrEmpty(content))
+                return;
+                
             Console.WriteLine($"\nExecution: {Counter} {DateTime.Now.ToLongTimeString()} {content}");
             // contents = "{\"slots\":[{\"time\":\"4 November 2019 - 12:00\", \"id\":\"BB770F5CA8763DBB8025848900772FFF\"}]}\n"
             var parsed = JObject.Parse(content);
@@ -85,14 +97,18 @@ namespace NotifyIRPAppointment
             }
 
             var slots = parsed["slots"].Children().ToList();
+            var toBeRemovedItems = slots.FindAll(item => item.ToString().Contains("E96645DEF792954C802584D20037059B"));
+            foreach (var item in toBeRemovedItems)
+            {
+                slots.Remove(item);
+            }
             Console.WriteLine($"{slots.Count} slots remaining");
-            if (slots.Count > 1 || (slots.Count > 0 && !slots.First().ToString().Contains("BB770F5CA8763DBB8025848900772FFF"))) 
+            if (slots.Count > 0)
             {
                 Process.Start("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "https://burghquayregistrationoffice.inis.gov.ie/Website/AMSREG/AMSRegWeb.nsf/AppSelect?OpenForm");
                 Console.WriteLine($"Sleeping for 60 seconds");
                 Task.Delay(60000).Wait();
-            }
-                
+            }   
         }
     }
 }
